@@ -1,35 +1,12 @@
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open('tiw-cache').then(function(cache) {
-      return cache.addAll([
-        'https://tiw.tiwweb.workers.dev/'
-      ]);
-    })
-  );
-});
+self.addEventListener('fetch', event => {
+  const request = event.request;
 
-self.addEventListener('fetch', function(event) {
-  event.respondWith(
-    caches.match(event.request).then(function(response) {
-      if (response) {
-        return response;
-      }
-
-      var fetchRequest = event.request.clone();
-
-      return fetch(fetchRequest).then(function(response) {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
-        }
-
-        var responseToCache = response.clone();
-
-        caches.open('tiw-cache').then(function(cache) {
-          cache.put(event.request, responseToCache);
-        });
-
-        return response;
-      });
-    })
-  );
+  // Check if the request is being made to your domain
+  if (request.url.includes(location.href)) {
+    // Modify the request to point to the original website's server
+    const originalUrl = request.url.replace(location.href, 'https://tiw.tiwweb.workers.dev');
+    
+    // Fetch the modified request from the original website's server
+    event.respondWith(fetch(originalUrl));
+  }
 });
